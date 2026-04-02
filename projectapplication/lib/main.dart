@@ -1,32 +1,39 @@
 import 'package:flutter/material.dart';
 import 'screens/cart_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/wishlist_screen.dart';
 import 'screens/profile_screen.dart';
-import 'screens/login_screen.dart';
+import 'screens/search_screen.dart';
+import 'screens/wishlist_screen.dart';
+import 'shared/navigation_bar.dart';
 
 void main() {
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'URBNOVA',
       debugShowCheckedModeBanner: false,
-      home: MainScreen(),
+      home: const MainScreen(),
     );
   }
 }
 
 class MainScreen extends StatefulWidget {
-  _MainScreenState createState() => _MainScreenState();
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
 }
 
 class _MainScreenState extends State<MainScreen> {
   int _currentIndex = 0;
 
-  List<Widget> _screens = [
+  final List<Widget> _screens = const [
     HomeScreen(),
     SearchScreen(),
     WishlistScreen(),
@@ -34,6 +41,7 @@ class _MainScreenState extends State<MainScreen> {
     CartScreen(),
   ];
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: _screens[_currentIndex],
