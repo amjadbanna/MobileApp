@@ -43,6 +43,7 @@ class _SearchScreenState extends State<SearchScreen> {
     super.dispose();
   }
 
+
   Future<void> _fetchProducts() async {
     setState(() => _isLoading = true);
     try {

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'screens/cart_screen.dart';
-import 'screens/home_screen.dart';
-import 'screens/profile_screen.dart';
-import 'screens/search_screen.dart';
-import 'screens/wishlist_screen.dart';
+import 'features/views/cart_screen.dart';
+import 'features/views/home_screen.dart';
+import 'features/views/profile_screen.dart';
+import 'features/views/search_screen.dart';
+import 'features/views/wishlist_screen.dart';
 import 'shared/navigation_bar.dart';
 
 void main() {

@@ -49,28 +49,82 @@ projectapplication
 │   ├── gradle.properties
 │   ├── local.properties
 │   └── settings.gradle.kts
+├── assets
+│   └── data
+│       └── products.json
+├── build
+│   ├── 3db25abb13e29dfd86c6b9b67f5bf79a.cache.dill.track.dill
+│   ├── b33e638cadf57cf697d0c4b07b92dc4c
+│   │   ├── .filecache
+│   │   ├── dart_build.d
+│   │   ├── dart_build.stamp
+│   │   ├── dart_build_result.json
+│   │   ├── gen_dart_plugin_registrant.stamp
+│   │   ├── gen_localizations.stamp
+│   │   ├── outputs.json
+│   │   └── _composite.stamp
+│   ├── flutter_assets
+│   │   ├── AssetManifest.bin
+│   │   ├── AssetManifest.bin.json
+│   │   ├── FontManifest.json
+│   │   ├── fonts
+│   │   │   └── MaterialIcons-Regular.otf
+│   │   ├── NOTICES
+│   │   ├── packages
+│   │   │   └── cupertino_icons
+│   │   │       └── assets
+│   │   │           └── CupertinoIcons.ttf
+│   │   └── shaders
+│   │       ├── ink_sparkle.frag
+│   │       └── stretch_effect.frag
+│   ├── native_assets
+│   │   └── web
+│   └── native_hooks
+│       └── .last_build_id
+├── ios
+│   ├── Flutter
+│   │   ├── ephemeral
+│   │   │   ├── flutter_lldbinit
+│   │   │   └── flutter_lldb_helper.py
+│   │   ├── flutter_export_environment.sh
+│   │   └── Generated.xcconfig
+│   └── Runner
+│       ├── GeneratedPluginRegistrant.h
+│       └── GeneratedPluginRegistrant.m
 ├── lib
 │   ├── core
 │   │   └── services
 │   │       ├── auth.service.dart
-│   │       ├── firestore_service.dart
-│   │       └── storage_service.dart
+│   │       └── local_product_service.dart
 │   ├── features
-│   │   ├── auth
+│   │   ├── products
 │   │   │   ├── controllers
+│   │   │   │   └── product_details_controller.dart
 │   │   │   ├── models
-│   │   │   └── views
-│   │   ├── events
-│   │   │   ├── controllers
-│   │   │   ├── models
-│   │   │   └── views
-│   │   └── tickets
-│   │       ├── controllers
-│   │       ├── models
-│   │       └── views
+│   │   │   │   └── product_model.dart
+│   │   │   ├── views
+│   │   │   │   └── product_details_screen.dart
+│   │   │   └── widgets
+│   │   │       ├── favorite_icon_button.dart
+│   │   │       ├── product_action_button.dart
+│   │   │       ├── product_size_selector.dart
+│   │   │       └── quantity_selector.dart
+│   │   └── views
+│   │       ├── cart_screen.dart
+│   │       ├── home_screen.dart
+│   │       ├── login_screen.dart
+│   │       ├── profile_screen.dart
+│   │       ├── search_screen.dart
+│   │       └── wishlist_screen.dart
 │   ├── main.dart
-│   ├── models
 │   └── shared
+│       └── navigation_bar.dart
+├── macos
+│   └── Flutter
+│       ├── ephemeral
+│       │   ├── Flutter-Generated.xcconfig
+│       │   └── flutter_export_environment.sh
+│       └── GeneratedPluginRegistrant.swift
 ├── pubspec.lock
 ├── pubspec.yaml
 ├── README.md
