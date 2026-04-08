@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projectapplication/core/services/local_product_service.dart';
+import 'package:projectapplication/core/services/wishlist_service.dart';
 import 'package:projectapplication/features/products/models/product_model.dart';
 import 'package:projectapplication/features/products/views/product_details_screen.dart';
 
@@ -12,6 +13,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final LocalProductService _productService = LocalProductService();
+  final WishlistService _wishlist = WishlistService.instance;
 
   List<ProductModel> _products = [];
   bool _isLoading = true;
@@ -20,6 +22,18 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadProducts();
+    // Rebuild the heart icons whenever the wishlist changes
+    _wishlist.addListener(_refresh);
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _wishlist.removeListener(_refresh);
+    super.dispose();
   }
 
   Future<void> _loadProducts() async {
@@ -42,14 +56,15 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<ProductModel> _getProductsByGender(String gender) {
-  return _products
-      .where((product) => product.gender.toLowerCase() == gender.toLowerCase())
-      .toList();
+    return _products
+        .where((p) => p.gender.toLowerCase() == gender.toLowerCase())
+        .toList();
   }
 
   List<ProductModel> _getProductsByStyle(String style) {
     return _products
-        .where((product) => (product.style ?? '').toLowerCase() == style.toLowerCase())
+        .where(
+            (p) => (p.style ?? '').toLowerCase() == style.toLowerCase())
         .toList();
   }
 
@@ -68,10 +83,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const Text(
             'View All',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey),
           ),
         ],
       ),
@@ -79,6 +91,8 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildProductCard(ProductModel product) {
+    final isFav = _wishlist.isInWishlist(product.id);
+
     return GestureDetector(
       onTap: () {
         Navigator.push(
@@ -140,22 +154,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                 ),
+                // Heart button to toggle wishlist
                 Positioned(
-                  top: 10,
-                  right: 10,
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      product.isFavorite
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      size: 18,
-                      color: product.isFavorite ? Colors.red : Colors.black,
+                  top: 8,
+                  right: 8,
+                  child: GestureDetector(
+                    onTap: () {
+                      _wishlist.toggleWishlist(product);
+                    },
+                    child: Container(
+                      width: 32,
+                      height: 32,
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isFav ? Icons.favorite : Icons.favorite_border,
+                        size: 18,
+                        color: isFav ? Colors.red : Colors.black,
+                      ),
                     ),
                   ),
                 ),
@@ -260,10 +278,7 @@ class _HomeScreenState extends State<HomeScreen> {
               SizedBox(height: 4),
               Text(
                 'Modern Urban Essentials',
-                style: TextStyle(
-                  color: Colors.white70,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: Colors.white70, fontSize: 14),
               ),
             ],
           ),
@@ -327,10 +342,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 16),
             const Text(
               'Unable to load products',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             const Text(

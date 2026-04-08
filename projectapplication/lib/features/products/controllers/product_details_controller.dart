@@ -1,13 +1,22 @@
 import 'package:flutter/material.dart';
+import '../../../core/services/cart_service.dart';
+import '../../../core/services/wishlist_service.dart';
+import '../models/product_model.dart';
 
 class ProductDetailsController extends ChangeNotifier {
+  final ProductModel product;
+
+  ProductDetailsController({required this.product}) {
+    // Check wishlist so the heart icon shows correctly when the screen opens
+    _isFavorite = WishlistService.instance.isInWishlist(product.id);
+  }
+
+  // Size and quantity fields
   String? _selectedSize;
   int _quantity = 1;
-  bool _isFavorite = false;
 
   String? get selectedSize => _selectedSize;
   int get quantity => _quantity;
-  bool get isFavorite => _isFavorite;
 
   void selectSize(String size) {
     _selectedSize = size;
@@ -26,16 +35,25 @@ class ProductDetailsController extends ChangeNotifier {
     }
   }
 
+  bool validateSelection() => _selectedSize != null;
+
+  // Wishlist fields
+  bool _isFavorite = false;
+
+  bool get isFavorite => _isFavorite;
+
   void toggleFavorite() {
-    _isFavorite = !_isFavorite;
+    WishlistService.instance.toggleWishlist(product);
+    _isFavorite = WishlistService.instance.isInWishlist(product.id);
     notifyListeners();
   }
 
-  bool validateSelection() {
-    return _selectedSize != null;
-  }
+  // Cart methods
 
-  void initializeFavorite(bool value) {
-    _isFavorite = value;
+  // Returns true and adds to cart. Returns false if no size was selected.
+  bool addToCart() {
+    if (_selectedSize == null) return false;
+    CartService.instance.addToCart(product, _selectedSize!, _quantity);
+    return true;
   }
 }
