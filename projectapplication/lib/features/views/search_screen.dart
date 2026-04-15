@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/services/database_helper.dart';
@@ -24,16 +25,13 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _isLoading = true;
   bool _usingFallback = false;
 
-  // Exact categories from products.json
   final List<String> _categories = [
     'All', 'Tops', 'Pants', 'Jackets', 'Coats',
     'Dresses', 'Outerwear', 'Footwear', 'Accessories',
   ];
 
-  // Exact genders from products.json
   final List<String> _genders = ['All', 'Men', 'Women', 'Unisex'];
 
-  // Exact styles from products.json
   final List<String> _styles = [
     'All', 'Streetwear', 'Casual', 'Formal', 'Modern', 'Basics', 'Techwear', 'Active', 'Classic',
   ];
@@ -48,12 +46,6 @@ class _SearchScreenState extends State<SearchScreen> {
     _loadProducts();
   }
 
-  // ─── LOAD PRODUCTS ───────────────────────────────────────────────
-  // Strategy:
-  //   1. Try SQLite first (fast, offline)
-  //   2. If SQLite fails → fall back to reading products.json directly
-  //   3. UI always shows something — never blank
-  // ─────────────────────────────────────────────────────────────────
   Future<void> _loadProducts() async {
     setState(() => _isLoading = true);
 
@@ -99,11 +91,6 @@ class _SearchScreenState extends State<SearchScreen> {
     }
   }
 
-  // ─── APPLY FILTERS ───────────────────────────────────────────────
-  // If using SQLite → query DB with WHERE clauses (proper DB usage)
-  // If using fallback → filter the JSON list in Dart
-  // Price is always filtered in Dart after category/gender/style
-  // ─────────────────────────────────────────────────────────────────
   Future<void> _applyFilters() async {
     setState(() => _isLoading = true);
 
@@ -111,14 +98,12 @@ class _SearchScreenState extends State<SearchScreen> {
       List<ProductModel> result;
 
       if (!_usingFallback) {
-        // Use SQLite with combined WHERE query
         result = await _dbHelper.getProductsByFilters(
           category: _selectedCategory,
           gender: _selectedGender,
           style: _selectedStyle,
         );
       } else {
-        // Fallback: filter the in-memory JSON list
         result = List.from(_allProducts);
 
         if (_selectedCategory != 'All') {
@@ -204,8 +189,9 @@ class _SearchScreenState extends State<SearchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
-            // Show fallback banner if using JSON instead of SQLite
-            if (_usingFallback)
+            // Only show banner on mobile when SQLite fails
+            // kIsWeb = true on Chrome, so banner is hidden on web
+            if (_usingFallback && !kIsWeb)
               Container(
                 width: double.infinity,
                 color: const Color(0xFFFFF3CD),
