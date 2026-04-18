@@ -78,163 +78,165 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final product = widget.product;
+    // Top padding for status bar so overlay buttons don't clash with system UI
+    final topPadding = MediaQuery.of(context).padding.top;
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildImageSection(product),
-                    Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            '${product.gender.toUpperCase()} • ${product.category.toUpperCase()}'
-                            '${product.style != null ? ' • ${product.style!.toUpperCase()}' : ''}',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 1,
-                            ),
+      body: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Image section sits flush to the very top of the screen
+                  _buildImageSection(product, topPadding),
+                  Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '${product.gender.toUpperCase()} • ${product.category.toUpperCase()}'
+                          '${product.style != null ? ' • ${product.style!.toUpperCase()}' : ''}',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 1,
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            product.title,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              height: 1.3,
-                            ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          product.title,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            height: 1.3,
                           ),
-                          const SizedBox(height: 12),
-                          Text(
-                            '\$${product.price.toStringAsFixed(2)}',
-                            style: const TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                            ),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          '\$${product.price.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                           ),
-                          const SizedBox(height: 24),
+                        ),
+                        const SizedBox(height: 24),
 
-                          if (product.colors.isNotEmpty) ...[
-                            const Text(
-                              'Available Colors',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
-                              children: product.colors.map((color) {
-                                return Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 10,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF5F5F5),
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: Colors.grey.shade300,
-                                    ),
-                                  ),
-                                  child: Text(
-                                    color,
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                );
-                              }).toList(),
-                            ),
-                            const SizedBox(height: 24),
-                          ],
-
+                        if (product.colors.isNotEmpty) ...[
                           const Text(
-                            'Select Size',
+                            'Available Colors',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.w700,
                             ),
                           ),
                           const SizedBox(height: 12),
-                          ProductSizeSelector(
-                            sizes: product.sizes,
-                            selectedSize: _controller.selectedSize,
-                            onSizeSelected: _controller.selectSize,
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: product.colors.map((color) {
+                              return Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 14,
+                                  vertical: 10,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFFF5F5F5),
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Text(
+                                  color,
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
                           ),
-
                           const SizedBox(height: 24),
-
-                          const Text(
-                            'Quantity',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          QuantitySelector(
-                            quantity: _controller.quantity,
-                            onIncrease: _controller.increaseQuantity,
-                            onDecrease: _controller.decreaseQuantity,
-                          ),
-
-                          const SizedBox(height: 24),
-
-                          const Text(
-                            'Description',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 10),
-                          Text(
-                            product.description,
-                            style: TextStyle(
-                              fontSize: 14,
-                              height: 1.6,
-                              color: Colors.grey.shade700,
-                            ),
-                          ),
                         ],
-                      ),
+
+                        const Text(
+                          'Select Size',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ProductSizeSelector(
+                          sizes: product.sizes,
+                          selectedSize: _controller.selectedSize,
+                          onSizeSelected: _controller.selectSize,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        const Text(
+                          'Quantity',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        QuantitySelector(
+                          quantity: _controller.quantity,
+                          onIncrease: _controller.increaseQuantity,
+                          onDecrease: _controller.decreaseQuantity,
+                        ),
+
+                        const SizedBox(height: 24),
+
+                        const Text(
+                          'Description',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          product.description,
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.6,
+                            color: Colors.grey.shade700,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-            _buildBottomActions(),
-          ],
-        ),
+          ),
+          _buildBottomActions(),
+        ],
       ),
     );
   }
 
-  Widget _buildImageSection(ProductModel product) {
+  Widget _buildImageSection(ProductModel product, double topPadding) {
     return Stack(
       children: [
+        // Image fills full width with a generous fixed height, no SafeArea inset
         Container(
-          height: 380,
+          height: 400,
           width: double.infinity,
-          color: const Color(0xFFF5F5F5),
-          padding: const EdgeInsets.all(30),
+          color: const Color(0xFFF2F2F2),
           child: Image.network(
             product.image,
-            fit: BoxFit.contain,
+            fit: BoxFit.cover,
             errorBuilder: (_, __, ___) => const Center(
               child: Icon(Icons.broken_image, size: 48, color: Colors.grey),
             ),
@@ -246,19 +248,49 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
             },
           ),
         ),
+        // Subtle gradient at top so back/fav buttons stay readable
         Positioned(
-          top: 16,
-          left: 16,
-          child: CircleAvatar(
-            backgroundColor: Colors.white,
-            child: IconButton(
-              onPressed: () => Navigator.pop(context),
-              icon: const Icon(Icons.arrow_back, color: Colors.black),
+          top: 0,
+          left: 0,
+          right: 0,
+          child: Container(
+            height: topPadding + 72,
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [Colors.black26, Colors.transparent],
+              ),
             ),
           ),
         ),
+        // Back button — offset by status bar height
         Positioned(
-          top: 16,
+          top: topPadding + 12,
+          left: 16,
+          child: GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: Colors.white.withOpacity(0.92),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.12),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: const Icon(Icons.arrow_back, color: Colors.black, size: 20),
+            ),
+          ),
+        ),
+        // Favourite button
+        Positioned(
+          top: topPadding + 12,
           right: 16,
           child: FavoriteIconButton(
             isFavorite: _controller.isFavorite,

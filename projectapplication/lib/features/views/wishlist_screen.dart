@@ -119,11 +119,11 @@ class _WishlistScreenState extends State<WishlistScreen> {
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.07),
-              blurRadius: 8,
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 10,
               offset: const Offset(0, 4),
             ),
           ],
@@ -136,15 +136,14 @@ class _WishlistScreenState extends State<WishlistScreen> {
               children: [
                 ClipRRect(
                   borderRadius:
-                      const BorderRadius.vertical(top: Radius.circular(16)),
+                      const BorderRadius.vertical(top: Radius.circular(18)),
                   child: Container(
-                    height: 170,
+                    height: 145,
                     width: double.infinity,
                     color: const Color(0xFFF2F2F2),
-                    padding: const EdgeInsets.all(12),
                     child: Image.network(
                       product.image,
-                      fit: BoxFit.contain,
+                      fit: BoxFit.cover,
                       loadingBuilder: (context, child, progress) {
                         if (progress == null) return child;
                         return const Center(
@@ -170,9 +169,15 @@ class _WishlistScreenState extends State<WishlistScreen> {
                     child: Container(
                       width: 32,
                       height: 32,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.10),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                       child: const Icon(
                         Icons.favorite,
@@ -314,7 +319,7 @@ class _WishlistScreenState extends State<WishlistScreen> {
                             gridDelegate:
                                 const SliverGridDelegateWithFixedCrossAxisCount(
                               crossAxisCount: 2,
-                              childAspectRatio: 0.62,
+                              childAspectRatio: 0.56,
                               crossAxisSpacing: 12,
                               mainAxisSpacing: 12,
                             ),

@@ -356,16 +356,16 @@ class _HomeScreenState extends State<HomeScreen> {
             builder: (_) => ProductDetailsScreen(product: product)),
       ),
       child: Container(
-        width: 160,
-        margin: const EdgeInsets.only(right: 12),
+        width: 168,
+        margin: const EdgeInsets.only(right: 14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.07),
-              blurRadius: 8,
-              offset: const Offset(0, 3),
+              color: Colors.black.withValues(alpha: 0.08),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
             ),
           ],
         ),
@@ -374,30 +374,29 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Stack(
               children: [
-                Container(
-                  height: 160,
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(12),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFF5F5F5),
-                    borderRadius: BorderRadius.vertical(
-                        top: Radius.circular(16)),
-                  ),
-                  child: Image.network(
-                    product.image,
-                    fit: BoxFit.contain,
-                    loadingBuilder: (context, child, progress) {
-                      if (progress == null) return child;
-                      return const Center(
-                        child: CircularProgressIndicator(
-                          color: Colors.black,
-                          strokeWidth: 2,
-                        ),
-                      );
-                    },
-                    errorBuilder: (_, _, _) => const Center(
-                      child: Icon(Icons.broken_image,
-                          color: Colors.grey, size: 40),
+                ClipRRect(
+                  borderRadius:
+                      const BorderRadius.vertical(top: Radius.circular(18)),
+                  child: Container(
+                    height: 172,
+                    width: double.infinity,
+                    color: const Color(0xFFF2F2F2),
+                    child: Image.network(
+                      product.image,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, progress) {
+                        if (progress == null) return child;
+                        return const Center(
+                          child: CircularProgressIndicator(
+                            color: Colors.black,
+                            strokeWidth: 2,
+                          ),
+                        );
+                      },
+                      errorBuilder: (_, __, ___) => const Center(
+                        child: Icon(Icons.broken_image,
+                            color: Colors.grey, size: 40),
+                      ),
                     ),
                   ),
                 ),
@@ -410,13 +409,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Container(
                       width: 32,
                       height: 32,
-                      decoration: const BoxDecoration(
+                      decoration: BoxDecoration(
                         color: Colors.white,
                         shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.10),
+                            blurRadius: 4,
+                          ),
+                        ],
                       ),
                       child: Icon(
                         isFav ? Icons.favorite : Icons.favorite_border,
-                        size: 18,
+                        size: 17,
                         color: isFav ? Colors.red : Colors.black54,
                       ),
                     ),
@@ -429,7 +434,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     left: 8,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                          horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: Colors.black,
                         borderRadius: BorderRadius.circular(8),
@@ -440,7 +445,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.white,
                           fontSize: 9,
                           fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
+                          letterSpacing: 0.6,
                         ),
                       ),
                     ),
@@ -448,7 +453,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 10, 4),
+              padding: const EdgeInsets.fromLTRB(11, 10, 11, 3),
               child: Text(
                 product.title,
                 maxLines: 2,
@@ -456,17 +461,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
+                  height: 1.3,
                 ),
               ),
             ),
             if (product.rating != null)
               Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 4),
+                padding: const EdgeInsets.fromLTRB(11, 0, 11, 3),
                 child: Row(
                   children: [
                     Icon(Icons.star_rounded,
                         size: 13, color: Colors.amber.shade600),
-                    const SizedBox(width: 2),
+                    const SizedBox(width: 3),
                     Text(
                       product.rating!.toStringAsFixed(1),
                       style: TextStyle(
@@ -483,7 +489,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              padding: const EdgeInsets.fromLTRB(11, 2, 11, 12),
               child: Text(
                 '\$${product.price.toStringAsFixed(0)}',
                 style: const TextStyle(
@@ -509,7 +515,7 @@ class _HomeScreenState extends State<HomeScreen> {
       );
     }
     return SizedBox(
-      height: 272,
+      height: 290,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -537,7 +543,7 @@ class _HomeScreenState extends State<HomeScreen> {
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
-        childAspectRatio: 0.68,
+        childAspectRatio: 0.66,
         crossAxisSpacing: 12,
         mainAxisSpacing: 12,
       ),
@@ -554,71 +560,86 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(18),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.07),
-                  blurRadius: 8,
-                  offset: const Offset(0, 3),
+                  color: Colors.black.withValues(alpha: 0.08),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
               ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: Stack(
-                    children: [
-                      Container(
+                Stack(
+                  children: [
+                    ClipRRect(
+                      borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(18)),
+                      child: Container(
+                        height: 150,
                         width: double.infinity,
-                        padding: const EdgeInsets.all(12),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFF5F5F5),
-                          borderRadius: BorderRadius.vertical(
-                              top: Radius.circular(16)),
-                        ),
+                        color: const Color(0xFFF2F2F2),
                         child: Image.network(
                           product.image,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => const Center(
+                          fit: BoxFit.cover,
+                          loadingBuilder: (context, child, progress) {
+                            if (progress == null) return child;
+                            return const Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.black,
+                                strokeWidth: 2,
+                              ),
+                            );
+                          },
+                          errorBuilder: (_, __, ___) => const Center(
                             child: Icon(Icons.broken_image,
                                 color: Colors.grey),
                           ),
                         ),
                       ),
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: GestureDetector(
-                          onTap: () => _wishlist.toggleWishlist(product),
-                          child: Container(
-                            width: 30,
-                            height: 30,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              isFav
-                                  ? Icons.favorite
-                                  : Icons.favorite_border,
-                              size: 16,
-                              color: isFav ? Colors.red : Colors.black54,
-                            ),
+                    ),
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: GestureDetector(
+                        onTap: () => _wishlist.toggleWishlist(product),
+                        child: Container(
+                          width: 30,
+                          height: 30,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            shape: BoxShape.circle,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.10),
+                                blurRadius: 4,
+                              ),
+                            ],
+                          ),
+                          child: Icon(
+                            isFav
+                                ? Icons.favorite
+                                : Icons.favorite_border,
+                            size: 16,
+                            color: isFav ? Colors.red : Colors.black54,
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
+                  padding: const EdgeInsets.fromLTRB(10, 9, 10, 2),
                   child: Text(
                     product.title,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        fontSize: 12, fontWeight: FontWeight.w600),
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        height: 1.3),
                   ),
                 ),
                 if (product.rating != null)
@@ -638,7 +659,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+                  padding: const EdgeInsets.fromLTRB(10, 2, 10, 10),
                   child: Text(
                     '\$${product.price.toStringAsFixed(0)}',
                     style: const TextStyle(
