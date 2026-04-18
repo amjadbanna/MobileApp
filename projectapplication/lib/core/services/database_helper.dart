@@ -75,36 +75,6 @@ class DatabaseHelper {
     return maps.map((map) => _mapToProduct(map)).toList();
   }
 
-  Future<List<ProductModel>> getProductsByCategory(String category) async {
-    final db = await database;
-    final maps = await db.query(
-      'products',
-      where: 'LOWER(category) = ?',
-      whereArgs: [category.toLowerCase()],
-    );
-    return maps.map((map) => _mapToProduct(map)).toList();
-  }
-
-  Future<List<ProductModel>> getProductsByGender(String gender) async {
-    final db = await database;
-    final maps = await db.query(
-      'products',
-      where: 'LOWER(gender) = ?',
-      whereArgs: [gender.toLowerCase()],
-    );
-    return maps.map((map) => _mapToProduct(map)).toList();
-  }
-
-  Future<List<ProductModel>> getProductsByStyle(String style) async {
-    final db = await database;
-    final maps = await db.query(
-      'products',
-      where: 'LOWER(style) = ?',
-      whereArgs: [style.toLowerCase()],
-    );
-    return maps.map((map) => _mapToProduct(map)).toList();
-  }
-
   Future<List<ProductModel>> getProductsByFilters({
     String? category,
     String? gender,
@@ -153,8 +123,4 @@ class DatabaseHelper {
     );
   }
 
-  Future<void> close() async {
-    final db = await database;
-    db.close();
-  }
 }

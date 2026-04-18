@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'features/views/cart_screen.dart';
 import 'features/views/home_screen.dart';
+import 'features/views/login_screen.dart';
 import 'features/views/profile_screen.dart';
 import 'features/views/search_screen.dart';
 import 'features/views/wishlist_screen.dart';
@@ -18,7 +19,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'URBNOVA',
       debugShowCheckedModeBanner: false,
-      home: const MainScreen(),
+      home: const LoginScreen(),
     );
   }
 }

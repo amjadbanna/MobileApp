@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:projectapplication/core/services/auth.service.dart';
-import 'package:projectapplication/features/views/home_screen.dart';
+import 'package:projectapplication/main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -56,9 +56,9 @@ class _LoginScreenState extends State<LoginScreen> {
     if (!mounted) return;
 
     if (success) {
-      Navigator.push(
+      Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        MaterialPageRoute(builder: (_) => const MainScreen()),
       );
     } else {
       ScaffoldMessenger.of(

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/services/database_helper.dart';
+import '../../core/services/wishlist_service.dart';
 import '../../features/products/models/product_model.dart';
 import '../../features/products/views/product_details_screen.dart';
 
@@ -388,7 +389,23 @@ class _ProductCard extends StatefulWidget {
 }
 
 class _ProductCardState extends State<_ProductCard> {
-  bool _isWishlisted = false;
+  final WishlistService _wishlist = WishlistService.instance;
+
+  @override
+  void initState() {
+    super.initState();
+    _wishlist.addListener(_refresh);
+  }
+
+  void _refresh() {
+    if (mounted) setState(() {});
+  }
+
+  @override
+  void dispose() {
+    _wishlist.removeListener(_refresh);
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -397,6 +414,7 @@ class _ProductCardState extends State<_ProductCard> {
     final image = widget.product.image;
     final displayTitle =
         title.length > 28 ? '${title.substring(0, 28)}...' : title;
+    final isFav = _wishlist.isInWishlist(widget.product.id);
 
     return GestureDetector(
       onTap: () {
@@ -452,8 +470,7 @@ class _ProductCardState extends State<_ProductCard> {
                     top: 8,
                     right: 8,
                     child: GestureDetector(
-                      onTap: () =>
-                          setState(() => _isWishlisted = !_isWishlisted),
+                      onTap: () => _wishlist.toggleWishlist(widget.product),
                       child: Container(
                         width: 34,
                         height: 34,
@@ -462,11 +479,9 @@ class _ProductCardState extends State<_ProductCard> {
                           shape: BoxShape.circle,
                         ),
                         child: Icon(
-                          _isWishlisted
-                              ? Icons.favorite
-                              : Icons.favorite_border,
+                          isFav ? Icons.favorite : Icons.favorite_border,
                           size: 18,
-                          color: _isWishlisted ? Colors.red : Colors.black54,
+                          color: isFav ? Colors.red : Colors.black54,
                         ),
                       ),
                     ),

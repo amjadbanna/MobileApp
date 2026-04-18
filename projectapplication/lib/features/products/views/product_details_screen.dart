@@ -9,10 +9,7 @@ import '../widgets/quantity_selector.dart';
 class ProductDetailsScreen extends StatefulWidget {
   final ProductModel product;
 
-  const ProductDetailsScreen({
-    super.key,
-    required this.product,
-  });
+  const ProductDetailsScreen({super.key, required this.product});
 
   @override
   State<ProductDetailsScreen> createState() => _ProductDetailsScreenState();
@@ -24,7 +21,7 @@ class _ProductDetailsScreenState extends State<ProductDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    // Controller now takes the product directly — no initializeFavorite needed
+
     _controller = ProductDetailsController(product: widget.product);
     _controller.addListener(_refresh);
   }
