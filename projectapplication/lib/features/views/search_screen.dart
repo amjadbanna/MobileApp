@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/services/database_helper.dart';
+import '../../core/services/product_catalog_service.dart';
 import '../../core/services/wishlist_service.dart';
 import '../../features/products/models/product_model.dart';
 import '../../features/products/views/product_details_screen.dart';
@@ -12,7 +12,7 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final ProductCatalogService _catalogService = ProductCatalogService.instance;
 
   List<ProductModel> _allProducts = [];
   List<ProductModel> _filteredProducts = [];
@@ -45,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
   Future<void> _loadProducts() async {
     setState(() => _isLoading = true);
     try {
-      final products = await _dbHelper.getAllProducts();
+      final products = await _catalogService.loadProducts();
       if (!mounted) return;
       setState(() {
         _allProducts = products;

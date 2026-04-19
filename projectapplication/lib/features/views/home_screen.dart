@@ -1,6 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:projectapplication/core/services/database_helper.dart';
+import 'package:projectapplication/core/services/product_catalog_service.dart';
 import 'package:projectapplication/core/services/wishlist_service.dart';
 import 'package:projectapplication/features/products/models/product_model.dart';
 import 'package:projectapplication/features/products/views/product_details_screen.dart';
@@ -14,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final DatabaseHelper _dbHelper = DatabaseHelper.instance;
+  final ProductCatalogService _catalogService = ProductCatalogService.instance;
   final WishlistService _wishlist = WishlistService.instance;
   final PageController _bannerController = PageController();
   Timer? _bannerTimer;
@@ -81,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _loadProducts() async {
     try {
-      final products = await _dbHelper.getAllProducts();
+      final products = await _catalogService.loadProducts();
       if (!mounted) return;
       setState(() {
         _products = products;

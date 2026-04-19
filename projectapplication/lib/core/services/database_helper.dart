@@ -5,6 +5,7 @@ import 'package:sqflite/sqflite.dart';
 import '../../features/products/models/product_model.dart';
 
 class DatabaseHelper {
+  static const String _databaseName = 'urbnova.db';
   static final DatabaseHelper instance = DatabaseHelper._internal();
   static Database? _database;
   static Future<Database>? _initFuture;
@@ -24,10 +25,9 @@ class DatabaseHelper {
   }
 
   Future<Database> _initDatabase() async {
-    final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'urbnova.db');
+    final path = await _databasePath();
 
-    return await openDatabase(
+    return openDatabase(
       path,
       version: 3,
       onCreate: _createTable,
@@ -35,15 +35,24 @@ class DatabaseHelper {
     );
   }
 
-  Future<void> _resetDatabase() async {
+  Future<String> _databasePath() async {
     final dbPath = await getDatabasesPath();
-    final path = join(dbPath, 'urbnova.db');
+    return join(dbPath, _databaseName);
+  }
+
+  Future<void> _closeDatabase() async {
     try {
       await _database?.close();
     } catch (_) {}
     _database = null;
     _initFuture = null;
+  }
+
+  Future<void> rebuildDatabase() async {
+    final path = await _databasePath();
+    await _closeDatabase();
     await deleteDatabase(path);
+    await database;
   }
 
   Future<void> _createTable(Database db, int version) async {
@@ -100,20 +109,15 @@ class DatabaseHelper {
   }
 
   Future<List<ProductModel>> getAllProducts() async {
-    try {
-      final db = await database;
-      List<Map<String, dynamic>> maps = await db.query('products');
-      if (maps.isEmpty) {
-        await _seedDatabase(db);
-        maps = await db.query('products');
-      }
-      return maps.map(_mapToProduct).toList();
-    } catch (_) {
-      await _resetDatabase();
-      final db = await database;
-      final maps = await db.query('products');
-      return maps.map(_mapToProduct).toList();
+    final db = await database;
+    List<Map<String, dynamic>> maps = await db.query('products');
+
+    if (maps.isEmpty) {
+      await _seedDatabase(db);
+      maps = await db.query('products');
     }
+
+    return maps.map(_mapToProduct).toList();
   }
 
   Future<List<ProductModel>> getProductsByFilters({

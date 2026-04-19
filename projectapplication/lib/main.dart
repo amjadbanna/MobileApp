@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'core/services/database_helper.dart';
+import 'core/services/product_catalog_service.dart';
 import 'features/views/cart_screen.dart';
 import 'features/views/home_screen.dart';
 import 'features/views/login_screen.dart';
@@ -11,9 +11,9 @@ import 'shared/navigation_bar.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    await DatabaseHelper.instance.database;
+    await ProductCatalogService.instance.warmUp();
   } catch (e) {
-    debugPrint('DB init error: $e');
+    debugPrint('Product catalog warm-up error: $e');
   }
   runApp(const MyApp());
 }
