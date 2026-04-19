@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'core/services/database_helper.dart';
 import 'features/views/cart_screen.dart';
 import 'features/views/home_screen.dart';
 import 'features/views/login_screen.dart';
@@ -7,7 +8,13 @@ import 'features/views/search_screen.dart';
 import 'features/views/wishlist_screen.dart';
 import 'shared/navigation_bar.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await DatabaseHelper.instance.database;
+  } catch (e) {
+    debugPrint('DB init error: $e');
+  }
   runApp(const MyApp());
 }
 

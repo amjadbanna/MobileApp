@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../../core/services/database_helper.dart';
 import '../../core/services/wishlist_service.dart';
 import '../../features/products/models/product_model.dart';
@@ -18,28 +16,23 @@ class _SearchScreenState extends State<SearchScreen> {
 
   List<ProductModel> _allProducts = [];
   List<ProductModel> _filteredProducts = [];
+  bool _isLoading = true;
+
   String _selectedCategory = 'All';
   String _selectedGender = 'All';
   String _selectedStyle = 'All';
   String _selectedPrice = 'All';
-  bool _isLoading = true;
-  bool _usingFallback = false;
 
-  // Exact categories from products.json
-  final List<String> _categories = [
+  static const _categories = [
     'All', 'Tops', 'Pants', 'Jackets', 'Coats',
     'Dresses', 'Outerwear', 'Footwear', 'Accessories',
   ];
-
-  // Exact genders from products.json
-  final List<String> _genders = ['All', 'Men', 'Women', 'Unisex'];
-
-  // Exact styles from products.json
-  final List<String> _styles = [
-    'All', 'Streetwear', 'Casual', 'Formal', 'Modern', 'Basics', 'Techwear', 'Active', 'Classic',
+  static const _genders = ['All', 'Men', 'Women', 'Unisex'];
+  static const _styles = [
+    'All', 'Streetwear', 'Casual', 'Formal', 'Modern',
+    'Basics', 'Techwear', 'Active', 'Classic',
   ];
-
-  final List<String> _priceFilters = [
+  static const _prices = [
     'All', 'Under \$50', '\$50–\$100', 'Over \$100',
   ];
 
@@ -49,151 +42,169 @@ class _SearchScreenState extends State<SearchScreen> {
     _loadProducts();
   }
 
-  // ─── LOAD PRODUCTS ───────────────────────────────────────────────
-  // Strategy:
-  //   1. Try SQLite first (fast, offline)
-  //   2. If SQLite fails → fall back to reading products.json directly
-  //   3. UI always shows something — never blank
-  // ─────────────────────────────────────────────────────────────────
   Future<void> _loadProducts() async {
     setState(() => _isLoading = true);
-
-    // Step 1: Try SQLite
     try {
       final products = await _dbHelper.getAllProducts();
-      if (products.isNotEmpty) {
-        setState(() {
-          _allProducts = products;
-          _filteredProducts = products;
-          _isLoading = false;
-          _usingFallback = false;
-        });
-        return;
-      }
-    } catch (e) {
-      debugPrint('SQLite failed: $e — falling back to JSON');
-    }
-
-    // Step 2: Fallback to local JSON file
-    await _loadFromJson();
-  }
-
-  Future<void> _loadFromJson() async {
-    try {
-      final String jsonString =
-          await rootBundle.loadString('assets/data/products.json');
-      final Map<String, dynamic> jsonData = json.decode(jsonString);
-      final List<dynamic> productsJson = jsonData['products'];
-      final products = productsJson
-          .map((item) => ProductModel.fromJson(item as Map<String, dynamic>))
-          .toList();
-
+      if (!mounted) return;
       setState(() {
         _allProducts = products;
-        _filteredProducts = products;
         _isLoading = false;
-        _usingFallback = true;
       });
+      _applyFilters();
     } catch (e) {
-      debugPrint('JSON fallback also failed: $e');
-      setState(() => _isLoading = false);
-    }
-  }
-
-  // ─── APPLY FILTERS ───────────────────────────────────────────────
-  // If using SQLite → query DB with WHERE clauses (proper DB usage)
-  // If using fallback → filter the JSON list in Dart
-  // Price is always filtered in Dart after category/gender/style
-  // ─────────────────────────────────────────────────────────────────
-  Future<void> _applyFilters() async {
-    setState(() => _isLoading = true);
-
-    try {
-      List<ProductModel> result;
-
-      if (!_usingFallback) {
-        // Use SQLite with combined WHERE query
-        result = await _dbHelper.getProductsByFilters(
-          category: _selectedCategory,
-          gender: _selectedGender,
-          style: _selectedStyle,
-        );
-      } else {
-        // Fallback: filter the in-memory JSON list
-        result = List.from(_allProducts);
-
-        if (_selectedCategory != 'All') {
-          result = result
-              .where((p) =>
-                  p.category.toLowerCase() ==
-                  _selectedCategory.toLowerCase())
-              .toList();
-        }
-        if (_selectedGender != 'All') {
-          result = result
-              .where((p) =>
-                  p.gender.toLowerCase() ==
-                  _selectedGender.toLowerCase())
-              .toList();
-        }
-        if (_selectedStyle != 'All') {
-          result = result
-              .where((p) =>
-                  (p.style ?? '').toLowerCase() ==
-                  _selectedStyle.toLowerCase())
-              .toList();
-        }
-      }
-
-      // Price filter always applied in Dart
-      switch (_selectedPrice) {
-        case 'Under \$50':
-          result = result.where((p) => p.price < 50).toList();
-          break;
-        case '\$50–\$100':
-          result =
-              result.where((p) => p.price >= 50 && p.price <= 100).toList();
-          break;
-        case 'Over \$100':
-          result = result.where((p) => p.price > 100).toList();
-          break;
-      }
-
+      if (!mounted) return;
       setState(() {
-        _filteredProducts = result;
+        _allProducts = [];
+        _filteredProducts = [];
         _isLoading = false;
       });
-    } catch (e) {
-      debugPrint('Filter error: $e');
-      setState(() => _isLoading = false);
     }
   }
 
-  void _onCategorySelected(String val) {
-    setState(() => _selectedCategory = val);
+  void _applyFilters() {
+    var result = List<ProductModel>.from(_allProducts);
+
+    if (_selectedCategory != 'All') {
+      result = result
+          .where((p) =>
+              p.category.toLowerCase() == _selectedCategory.toLowerCase())
+          .toList();
+    }
+    if (_selectedGender != 'All') {
+      result = result
+          .where((p) =>
+              p.gender.toLowerCase() == _selectedGender.toLowerCase())
+          .toList();
+    }
+    if (_selectedStyle != 'All') {
+      result = result
+          .where((p) =>
+              (p.style ?? '').toLowerCase() == _selectedStyle.toLowerCase())
+          .toList();
+    }
+    switch (_selectedPrice) {
+      case 'Under \$50':
+        result = result.where((p) => p.price < 50).toList();
+        break;
+      case '\$50–\$100':
+        result = result.where((p) => p.price >= 50 && p.price <= 100).toList();
+        break;
+      case 'Over \$100':
+        result = result.where((p) => p.price > 100).toList();
+        break;
+    }
+
+    setState(() => _filteredProducts = result);
+  }
+
+  bool get _hasActiveFilters =>
+      _selectedCategory != 'All' ||
+      _selectedGender != 'All' ||
+      _selectedStyle != 'All' ||
+      _selectedPrice != 'All';
+
+  int get _activeFilterCount => [
+        _selectedCategory,
+        _selectedGender,
+        _selectedStyle,
+        _selectedPrice,
+      ].where((v) => v != 'All').length;
+
+  void _clearAll() {
+    setState(() {
+      _selectedCategory = 'All';
+      _selectedGender = 'All';
+      _selectedStyle = 'All';
+      _selectedPrice = 'All';
+    });
     _applyFilters();
   }
 
-  void _onGenderSelected(String val) {
-    setState(() => _selectedGender = val);
-    _applyFilters();
-  }
-
-  void _onStyleSelected(String val) {
-    setState(() => _selectedStyle = val);
-    _applyFilters();
-  }
-
-  void _onPriceSelected(String val) {
-    setState(() => _selectedPrice = val);
-    _applyFilters();
-  }
-
-  String _getSectionTitle() {
-    if (_selectedCategory != 'All') return _selectedCategory;
-    if (_selectedGender != 'All') return _selectedGender;
-    if (_selectedStyle != 'All') return _selectedStyle;
-    return 'Trending';
+  // ─── Bottom Sheet Picker ──────────────────────────────────────────
+  void _showPicker({
+    required String label,
+    required List<String> options,
+    required String current,
+    required ValueChanged<String> onSelected,
+  }) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (_) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: options.map((opt) {
+                    final isSelected = opt == current;
+                    return GestureDetector(
+                      onTap: () {
+                        onSelected(opt);
+                        Navigator.pop(context);
+                      },
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 150),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 18, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? Colors.black
+                              : const Color(0xFFF3F3F3),
+                          borderRadius: BorderRadius.circular(24),
+                          border: Border.all(
+                            color: isSelected
+                                ? Colors.black
+                                : Colors.transparent,
+                          ),
+                        ),
+                        child: Text(
+                          opt,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   @override
@@ -205,30 +216,11 @@ class _SearchScreenState extends State<SearchScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildHeader(),
-            // Show fallback banner if using JSON instead of SQLite
-            if (_usingFallback)
-              Container(
-                width: double.infinity,
-                color: const Color(0xFFFFF3CD),
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 20, vertical: 6),
-                child: const Text(
-                  'Offline mode — showing local data',
-                  style: TextStyle(fontSize: 12, color: Color(0xFF856404)),
-                ),
-              ),
-            _buildFilterLabel('Category'),
-            _buildFilterRow(_categories, _selectedCategory, _onCategorySelected),
-            const SizedBox(height: 8),
-            _buildFilterLabel('Gender'),
-            _buildFilterRow(_genders, _selectedGender, _onGenderSelected),
-            const SizedBox(height: 8),
-            _buildFilterLabel('Style'),
-            _buildFilterRow(_styles, _selectedStyle, _onStyleSelected),
-            const SizedBox(height: 8),
-            _buildFilterLabel('Price Range'),
-            _buildFilterRow(_priceFilters, _selectedPrice, _onPriceSelected),
-            _buildSectionTitle(),
+            _buildCategoryTabs(),
+            _buildFilterBar(),
+            const SizedBox(height: 4),
+            _buildResultsBar(),
+            const Divider(height: 1, color: Color(0xFFEEEEEE)),
             Expanded(child: _buildProductGrid()),
           ],
         ),
@@ -236,67 +228,85 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
+  // ─── Header ──────────────────────────────────────────────────────
   Widget _buildHeader() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(20, 20, 20, 12),
-      child: Text(
-        'Search',
-        style: TextStyle(
-          fontSize: 28,
-          fontWeight: FontWeight.w700,
-          color: Colors.black,
-          letterSpacing: -0.5,
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFilterLabel(String label) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 4, 20, 6),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w600,
-          color: Colors.grey.shade500,
-          letterSpacing: 0.5,
-        ),
+      padding: const EdgeInsets.fromLTRB(20, 22, 20, 14),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Browse',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: Colors.black,
+              letterSpacing: -0.5,
+            ),
+          ),
+          if (_hasActiveFilters)
+            GestureDetector(
+              onTap: _clearAll,
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                decoration: BoxDecoration(
+                  color: Colors.black,
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.close_rounded,
+                        color: Colors.white, size: 13),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Clear ($_activeFilterCount)',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
 
-  Widget _buildFilterRow(
-    List<String> options,
-    String selected,
-    void Function(String) onSelected,
-  ) {
+  // ─── Category Tabs ───────────────────────────────────────────────
+  Widget _buildCategoryTabs() {
     return SizedBox(
-      height: 36,
+      height: 38,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        itemCount: options.length,
+        itemCount: _categories.length,
         separatorBuilder: (_, __) => const SizedBox(width: 8),
-        itemBuilder: (context, index) {
-          final option = options[index];
-          final isSelected = selected == option;
+        itemBuilder: (_, i) {
+          final cat = _categories[i];
+          final isSelected = _selectedCategory == cat;
           return GestureDetector(
-            onTap: () => onSelected(option),
+            onTap: () {
+              setState(() => _selectedCategory = cat);
+              _applyFilters();
+            },
             child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
+              duration: const Duration(milliseconds: 180),
               padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               decoration: BoxDecoration(
                 color: isSelected ? Colors.black : const Color(0xFFF3F3F3),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Text(
-                option,
+                cat,
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: isSelected ? Colors.white : Colors.black87,
+                  color: isSelected ? Colors.white : Colors.black54,
                 ),
               ),
             ),
@@ -306,36 +316,117 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  Widget _buildSectionTitle() {
+  // ─── Filter Bar ──────────────────────────────────────────────────
+  Widget _buildFilterBar() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            _getSectionTitle(),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: Colors.black,
-              letterSpacing: -0.3,
+          _buildFilterPill(
+            label: 'Gender',
+            value: _selectedGender,
+            onTap: () => _showPicker(
+              label: 'Gender',
+              options: _genders,
+              current: _selectedGender,
+              onSelected: (v) {
+                setState(() => _selectedGender = v);
+                _applyFilters();
+              },
             ),
           ),
-          if (!_isLoading)
-            Text(
-              '${_filteredProducts.length} items',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+          const SizedBox(width: 10),
+          _buildFilterPill(
+            label: 'Style',
+            value: _selectedStyle,
+            onTap: () => _showPicker(
+              label: 'Style',
+              options: _styles,
+              current: _selectedStyle,
+              onSelected: (v) {
+                setState(() => _selectedStyle = v);
+                _applyFilters();
+              },
             ),
+          ),
+          const SizedBox(width: 10),
+          _buildFilterPill(
+            label: 'Price',
+            value: _selectedPrice,
+            onTap: () => _showPicker(
+              label: 'Price Range',
+              options: _prices,
+              current: _selectedPrice,
+              onSelected: (v) {
+                setState(() => _selectedPrice = v);
+                _applyFilters();
+              },
+            ),
+          ),
         ],
       ),
     );
   }
 
+  Widget _buildFilterPill({
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+  }) {
+    final isActive = value != 'All';
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive ? Colors.black : const Color(0xFFF3F3F3),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isActive ? Colors.black : const Color(0xFFE0E0E0),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              isActive ? value : label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isActive ? Colors.white : Colors.black54,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: isActive ? Colors.white : Colors.black38,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ─── Results Bar ─────────────────────────────────────────────────
+  Widget _buildResultsBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 14, 20, 10),
+      child: Text(
+        _isLoading
+            ? 'Loading…'
+            : '${_filteredProducts.length} item${_filteredProducts.length == 1 ? '' : 's'}',
+        style: TextStyle(fontSize: 13, color: Colors.grey.shade500),
+      ),
+    );
+  }
+
+  // ─── Product Grid ────────────────────────────────────────────────
   Widget _buildProductGrid() {
     if (_isLoading) {
       return const Center(
-        child: CircularProgressIndicator(color: Colors.black),
-      );
+          child: CircularProgressIndicator(color: Colors.black));
     }
 
     if (_filteredProducts.isEmpty) {
@@ -343,11 +434,11 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.filter_list_off,
+            Icon(Icons.search_off_rounded,
                 size: 56, color: Colors.grey.shade300),
             const SizedBox(height: 16),
             Text(
-              'No products found',
+              'No products match',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
@@ -355,9 +446,17 @@ class _SearchScreenState extends State<SearchScreen> {
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              'Try a different filter',
-              style: TextStyle(fontSize: 13, color: Colors.grey.shade400),
+            GestureDetector(
+              onTap: _clearAll,
+              child: Text(
+                'Clear all filters',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black,
+                  decoration: TextDecoration.underline,
+                ),
+              ),
             ),
           ],
         ),
@@ -365,7 +464,7 @@ class _SearchScreenState extends State<SearchScreen> {
     }
 
     return GridView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         childAspectRatio: 0.68,
@@ -373,13 +472,13 @@ class _SearchScreenState extends State<SearchScreen> {
         mainAxisSpacing: 14,
       ),
       itemCount: _filteredProducts.length,
-      itemBuilder: (context, index) {
-        return _ProductCard(product: _filteredProducts[index]);
-      },
+      itemBuilder: (context, index) =>
+          _ProductCard(product: _filteredProducts[index]),
     );
   }
 }
 
+// ─── Product Card ─────────────────────────────────────────────────
 class _ProductCard extends StatefulWidget {
   final ProductModel product;
   const _ProductCard({required this.product});
@@ -417,18 +516,22 @@ class _ProductCardState extends State<_ProductCard> {
     final isFav = _wishlist.isInWishlist(widget.product.id);
 
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ProductDetailsScreen(product: widget.product),
-          ),
-        );
-      },
+      onTap: () => Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (_) => ProductDetailsScreen(product: widget.product)),
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.06),
+              blurRadius: 8,
+              offset: const Offset(0, 3),
+            ),
+          ],
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -437,7 +540,8 @@ class _ProductCardState extends State<_ProductCard> {
               child: Stack(
                 children: [
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: const BorderRadius.vertical(
+                        top: Radius.circular(14)),
                     child: Container(
                       color: const Color(0xFFF5F5F5),
                       width: double.infinity,
@@ -450,9 +554,7 @@ class _ProductCardState extends State<_ProductCard> {
                             color: const Color(0xFFF5F5F5),
                             child: const Center(
                               child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: Colors.black,
-                              ),
+                                  strokeWidth: 2, color: Colors.black),
                             ),
                           );
                         },
@@ -474,9 +576,15 @@ class _ProductCardState extends State<_ProductCard> {
                       child: Container(
                         width: 34,
                         height: 34,
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: Colors.white,
                           shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.08),
+                              blurRadius: 4,
+                            ),
+                          ],
                         ),
                         child: Icon(
                           isFav ? Icons.favorite : Icons.favorite_border,
@@ -489,28 +597,31 @@ class _ProductCardState extends State<_ProductCard> {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
-            Text(
-              displayTitle,
-              style: const TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: Colors.black87,
-                height: 1.3,
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            const SizedBox(height: 4),
-            Text(
-              '\$${price.toStringAsFixed(2)}',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.black,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 8, 10, 2),
+              child: Text(
+                displayTitle,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
+                  height: 1.3,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
-            const SizedBox(height: 8),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 2, 10, 10),
+              child: Text(
+                '\$${price.toStringAsFixed(2)}',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.black,
+                ),
+              ),
+            ),
           ],
         ),
       ),
